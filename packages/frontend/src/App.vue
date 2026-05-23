@@ -6,6 +6,7 @@
         <span class="subtitle">告警处置台</span>
       </div>
       <nav class="nav">
+        <router-link to="/incidents" class="nav-link">事件</router-link>
         <router-link to="/settings/sla" class="nav-link">SLA配置</router-link>
       </nav>
     </header>

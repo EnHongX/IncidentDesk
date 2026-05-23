@@ -1,6 +1,7 @@
 import { getTransition } from '../state-machine.js';
 import { prisma } from '../db.js';
 import { computeSlaStatus, getSlaConfigMap } from './sla.service.js';
+import { aggregateAlerts } from './incident.service.js';
 
 export interface AlertImportItem {
   externalId: string;
@@ -9,12 +10,16 @@ export interface AlertImportItem {
   severity: string;
   description?: string;
   metadata?: Record<string, unknown>;
+  service?: string;
+  fingerprint?: string;
 }
 
 export interface ImportResult {
   imported: number;
   skipped: number;
   skippedIds: string[];
+  aggregated: number;
+  incidentIds: string[];
 }
 
 export async function importAlerts(items: AlertImportItem[]): Promise<ImportResult> {
@@ -58,11 +63,26 @@ export async function importAlerts(items: AlertImportItem[]): Promise<ImportResu
         severity: item.severity,
         description: item.description ?? null,
         metadata: item.metadata ? JSON.stringify(item.metadata) : null,
+        service: item.service ?? null,
+        fingerprint: item.fingerprint ?? null,
       })),
     });
   }
 
-  return { imported: toCreate.length, skipped: skippedIds.length, skippedIds };
+  // Aggregate newly imported alerts into incidents
+  let aggregated = 0;
+  let incidentIds: string[] = [];
+  if (toCreate.length > 0) {
+    const created = await prisma.alert.findMany({
+      where: { externalId: { in: toCreate.map((i) => i.externalId) } },
+      select: { id: true },
+    });
+    const result = await aggregateAlerts(created.map((a) => a.id));
+    aggregated = result.aggregated;
+    incidentIds = result.incidents;
+  }
+
+  return { imported: toCreate.length, skipped: skippedIds.length, skippedIds, aggregated, incidentIds };
 }
 
 export async function listAlerts(filters: {

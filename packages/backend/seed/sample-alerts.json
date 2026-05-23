@@ -4,6 +4,8 @@
     "title": "CPU使用率超过95% - prod-web-01",
     "source": "prometheus",
     "severity": "critical",
+    "service": "web-frontend",
+    "fingerprint": "cpu-high",
     "description": "生产环境Web服务器CPU持续高负载，已超过阈值5分钟",
     "metadata": { "host": "prod-web-01", "value": 97.3, "threshold": 95, "duration": "5m" }
   },
@@ -12,6 +14,8 @@
     "title": "数据库连接池耗尽 - MySQL主库",
     "source": "grafana",
     "severity": "critical",
+    "service": "mysql",
+    "fingerprint": "conn-pool-exhausted",
     "description": "MySQL主库连接数达到上限，新请求无法获取连接",
     "metadata": { "host": "db-master-01", "connections": 500, "max": 500 }
   },
@@ -20,6 +24,8 @@
     "title": "磁盘空间不足 - /data 分区使用率92%",
     "source": "zabbix",
     "severity": "high",
+    "service": "data-node",
+    "fingerprint": "disk-space-low",
     "description": "数据分区磁盘即将写满，预计6小时后达到100%",
     "metadata": { "host": "data-node-03", "partition": "/data", "usage": 92 }
   },
@@ -28,6 +34,8 @@
     "title": "API响应时间超过3秒 - /api/orders",
     "source": "datadog",
     "severity": "high",
+    "service": "order-service",
+    "fingerprint": "latency-spike",
     "description": "订单接口P99延迟飙升，用户下单体验受影响",
     "metadata": { "endpoint": "/api/orders", "p99_ms": 3200, "threshold_ms": 1000 }
   },
@@ -36,6 +44,8 @@
     "title": "SSL证书即将过期 - api.example.com",
     "source": "certbot",
     "severity": "medium",
+    "service": "api-gateway",
+    "fingerprint": "ssl-expiry",
     "description": "SSL证书将在7天后过期，需及时续签",
     "metadata": { "domain": "api.example.com", "expires_in_days": 7 }
   },
@@ -44,6 +54,8 @@
     "title": "内存使用率持续上升 - worker-02",
     "source": "prometheus",
     "severity": "medium",
+    "service": "web-frontend",
+    "fingerprint": "memory-leak",
     "description": "Worker进程内存稳步增长，疑似内存泄漏",
     "metadata": { "host": "worker-02", "mem_usage": 78, "trend": "increasing" }
   },
@@ -52,6 +64,8 @@
     "title": "日志采集延迟 - kafka consumer lag",
     "source": "grafana",
     "severity": "low",
+    "service": "log-pipeline",
+    "fingerprint": "consumer-lag",
     "description": "Kafka消费者组积压消息数超过1万条",
     "metadata": { "consumer_group": "log-collector", "lag": 12500 }
   },
@@ -60,6 +74,8 @@
     "title": "健康检查失败 - payment-service",
     "source": "kubernetes",
     "severity": "critical",
+    "service": "payment-service",
+    "fingerprint": "health-check-fail",
     "description": "支付服务连续3次健康检查失败，Pod即将被重启",
     "metadata": { "pod": "payment-service-7f8d9-x2k4", "namespace": "production", "failures": 3 }
   }

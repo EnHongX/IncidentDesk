@@ -1,11 +1,13 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { alertRoutes } from './routes/alerts.js';
+import { incidentRoutes } from './routes/incidents.js';
 
 const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: true });
 await app.register(alertRoutes);
+await app.register(incidentRoutes);
 
 app.get('/api/health', async () => ({ status: 'ok' }));
 

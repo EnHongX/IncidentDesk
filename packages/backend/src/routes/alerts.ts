@@ -12,6 +12,8 @@ const importSchema = z.object({
       severity: z.enum(['critical', 'high', 'medium', 'low']),
       description: z.string().optional(),
       metadata: z.record(z.unknown()).optional(),
+      service: z.string().optional(),
+      fingerprint: z.string().optional(),
     })
   ),
 });

@@ -40,11 +40,20 @@ async function main() {
         severity: alert.severity,
         description: alert.description ?? null,
         metadata: alert.metadata ? JSON.stringify(alert.metadata) : null,
+        service: alert.service ?? null,
+        fingerprint: alert.fingerprint ?? null,
       },
     });
   }
 
   console.log(`Seeded ${alerts.length} alerts`);
+
+  // Seed default incident config
+  const existingConfig = await prisma.incidentConfig.findFirst();
+  if (!existingConfig) {
+    await prisma.incidentConfig.create({ data: { timeWindowMin: 60 } });
+  }
+  console.log('Seeded incident config: timeWindow=60min');
 }
 
 main()

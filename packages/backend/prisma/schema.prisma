@@ -17,15 +17,21 @@ model Alert {
   description  String?
   metadata     String?
   assignee     String?
+  service      String?
+  fingerprint  String?
+  incidentId   String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   timeline TimelineEntry[]
+  incident Incident? @relation(fields: [incidentId], references: [id])
 
   @@index([status])
   @@index([severity])
   @@index([source])
   @@index([assignee])
+  @@index([service, fingerprint])
+  @@index([incidentId])
 }
 
 model SlaConfig {
@@ -47,4 +53,40 @@ model TimelineEntry {
   alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
 
   @@index([alertId])
+}
+
+model Incident {
+  id          String   @id @default(cuid())
+  title       String
+  service     String
+  fingerprint String
+  severity    String
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  alerts   Alert[]
+  timeline IncidentTimeline[]
+
+  @@index([service, fingerprint, status])
+  @@index([status])
+  @@index([severity])
+}
+
+model IncidentTimeline {
+  id         String   @id @default(cuid())
+  incidentId String
+  action     String
+  detail     String?
+  operator   String?
+  createdAt  DateTime @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+}
+
+model IncidentConfig {
+  id            String @id @default(cuid())
+  timeWindowMin Int    @default(60)
 }

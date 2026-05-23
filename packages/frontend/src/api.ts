@@ -117,3 +117,120 @@ export async function handoverAlerts(
   return res.json();
 }
 
+// --- Incident types ---
+
+export interface IncidentTimelineEntry {
+  id: string;
+  action: string;
+  detail: string | null;
+  operator: string | null;
+  createdAt: string;
+}
+
+export interface IncidentAlertSummary {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+  externalId: string;
+  createdAt: string;
+}
+
+export interface Incident {
+  id: string;
+  title: string;
+  service: string;
+  fingerprint: string;
+  severity: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  alerts: IncidentAlertSummary[];
+  timeline: IncidentTimelineEntry[];
+  _count?: { alerts: number };
+}
+
+export interface IncidentConfig {
+  timeWindowMin: number;
+}
+
+// --- Incident API ---
+
+export async function fetchIncidents(params?: Record<string, string>): Promise<Incident[]> {
+  const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+  const res = await fetch(`${BASE}/incidents${qs}`);
+  return res.json();
+}
+
+export async function fetchIncident(id: string): Promise<Incident> {
+  const res = await fetch(`${BASE}/incidents/${id}`);
+  return res.json();
+}
+
+export async function mergeIncident(
+  targetId: string,
+  sourceIncidentId: string,
+  operator: string,
+  comment?: string
+): Promise<Incident> {
+  const res = await fetch(`${BASE}/incidents/${targetId}/merge`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sourceIncidentId, operator, comment }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || '合并失败');
+  }
+  return res.json();
+}
+
+export async function removeAlertFromIncident(
+  incidentId: string,
+  alertId: string,
+  operator: string,
+  comment?: string
+): Promise<Incident> {
+  const res = await fetch(`${BASE}/incidents/${incidentId}/remove-alert`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ alertId, operator, comment }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || '移出失败');
+  }
+  return res.json();
+}
+
+export async function closeIncident(
+  id: string,
+  operator: string,
+  comment?: string
+): Promise<Incident> {
+  const res = await fetch(`${BASE}/incidents/${id}/close`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ operator, comment }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || '关闭失败');
+  }
+  return res.json();
+}
+
+export async function fetchIncidentConfig(): Promise<IncidentConfig> {
+  const res = await fetch(`${BASE}/incident-config`);
+  return res.json();
+}
+
+export async function updateIncidentConfig(timeWindowMin: number): Promise<IncidentConfig> {
+  const res = await fetch(`${BASE}/incident-config`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ timeWindowMin }),
+  });
+  return res.json();
+}
+
