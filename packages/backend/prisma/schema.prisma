@@ -1,0 +1,50 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Alert {
+  id           String    @id @default(cuid())
+  externalId   String    @unique
+  title        String
+  source       String
+  severity     String
+  status       String    @default("NEW")
+  description  String?
+  metadata     String?
+  assignee     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  timeline TimelineEntry[]
+
+  @@index([status])
+  @@index([severity])
+  @@index([source])
+  @@index([assignee])
+}
+
+model SlaConfig {
+  id             String @id @default(cuid())
+  severity       String @unique
+  deadlineMinutes Int
+}
+
+model TimelineEntry {
+  id        String   @id @default(cuid())
+  alertId   String
+  action    String
+  operator  String?
+  comment   String?
+  fromState String?
+  toState   String?
+  createdAt DateTime @default(now())
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+}
